@@ -1,0 +1,52 @@
+<h1>Image Raw Data</h1>
+<input type="url" id="linkInput" placeholder="Enter IMG URL here">
+<button id="buttonObj" onclick="getImageData()">Get Raw Data</button>
+
+<script>
+  let data;
+  function getImageData() {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.src = document.getElementById("linkInput").value;
+  
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+  
+  	img.onload = () => {
+    	canvas.width = img.width;
+    	canvas.height = img.height;
+    	ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    	const pixels = imageData.data; // This is the Uint8ClampedArray
+      data = canvas.width + ", " + canvas.height + ", ";
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          const index = (y * canvas.width + x) * 4;
+    			const r = pixels[index];
+    			const g = pixels[index + 1];
+    			const b = pixels[index + 2];
+    			//const a = pixels[index + 3];
+          
+          data += r + ", " + g + ", " + b + ", ";
+        }
+      }
+      
+			data = data.slice(0, -2);
+      
+      document.getElementById("linkInput").remove();
+      document.getElementById("buttonObj").outerHTML = "<button id='buttonObj' onclick='copyStringToClipboard(data)'>Copy to Clipboard</button>";
+    };
+  }
+  
+  async function copyStringToClipboard(textToCopy) {
+  	try {
+    	await navigator.clipboard.writeText(textToCopy);
+    	alert('Text successfully copied to clipboard');
+    	// You can add user feedback here, e.g., a temporary "Copied!" message
+  	} catch (err) {
+    	alert('Failed to copy text: ', err);
+      document.getElementById("buttonObj").outerHTML = "<p style='padding: 100px'>" + textToCopy;
+    	// Handle errors, e.g., if the user denies permission or the browser doesn't support it
+  }
+}
+</script>
